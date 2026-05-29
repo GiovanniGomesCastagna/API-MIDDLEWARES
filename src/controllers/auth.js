@@ -84,7 +84,7 @@ async function update(req, res) {
     //   })
     // }
 
-    if (!params.email || !req.body.senha || !params.nome || !params.tipo_acesso) {
+    if (!params.email && !params.senha && !params.nome && !params.tipo_acesso) {
       return res.status(400).json({
         status: "error",
         message: `Preencha ao menos um campo para atualizar o usuário. Campos disponíveis: email, senha, nome, tipo_acesso`,
