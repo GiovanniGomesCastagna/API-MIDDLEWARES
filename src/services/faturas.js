@@ -19,7 +19,7 @@ async function getFaturaByID(id) {
   WHERE ID = $1;
   `
 
-  const resposta = await db.query(sql, [id])
+  const resposta = await db.query(sql, id)
   return resposta.rows
 }
 
@@ -44,6 +44,8 @@ async function createFatura (params) {
   `
   const resposta = await db.query(sql, [
     venda_id,
+    usuario_id,
+    valor_fatura,
     status,
     data_vencimento,
     data_pagamento
@@ -73,6 +75,7 @@ async function updateFatura (params) {
      where id = $${bindIndex++}
      returning *
   `
+  
 
   const resposta = await db.query(sql, binds)
   return resposta.rows

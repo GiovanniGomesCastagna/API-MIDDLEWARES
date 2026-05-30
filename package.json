@@ -11,10 +11,14 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "customParseFormat": "link:dayjs/plugin/customParseFormat",
+    "dayjs": "^1.11.21",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.14.1"
+    "pg": "^8.14.1",
+    "timezone": "link:dayjs/plugin/timezone",
+    "utc": "link:dayjs/plugin/utc"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

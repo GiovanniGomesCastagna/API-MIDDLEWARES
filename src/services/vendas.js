@@ -11,6 +11,15 @@ async function getVendasByID (id) {
   FROM VENDAS WHERE ID = $1
   `
   const resposta = await db.query(sql, [id])
+  return resposta.rows[0]
+}
+
+async function getVendasByUser (usuario_id) {
+  const sql = `
+  SELECT ID, USUARIO_ID, TOTAL_VENDA, DATA_VENDA
+  FROM VENDAS WHERE USUARIO_ID = $1
+  `
+  const resposta = await db.query(sql, [usuario_id])
   return resposta.rows
 }
 
@@ -65,6 +74,7 @@ async function deleteVenda (params) {
 module.exports = {
   getVendas,
   getVendasByID,
+  getVendasByUser,
   createVenda,
   updateVenda,
   deleteVenda
