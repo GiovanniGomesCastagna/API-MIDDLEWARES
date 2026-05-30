@@ -1,7 +1,17 @@
 const db = require('../configs')
 
-async function getVendas () {
-  const resposta = await db.query('select * from vendas')
+async function getVendas (params) {
+  const { tipo_acesso, usuario_id } = params
+
+  let sql = `
+  SELECT * FROM VENDAS WHERE 1=1
+  `
+
+  if (tipo_acesso == 'padrao') {
+    sql += `AND USUARIO_ID = ${usuario_id}`
+  }
+
+  const resposta = await db.query(sql)
   return resposta.rows
 }
 
@@ -12,15 +22,6 @@ async function getVendasByID (id) {
   `
   const resposta = await db.query(sql, [id])
   return resposta.rows[0]
-}
-
-async function getVendasByUser (usuario_id) {
-  const sql = `
-  SELECT ID, USUARIO_ID, TOTAL_VENDA, DATA_VENDA
-  FROM VENDAS WHERE USUARIO_ID = $1
-  `
-  const resposta = await db.query(sql, [usuario_id])
-  return resposta.rows
 }
 
 async function createVenda (params) {
@@ -74,7 +75,6 @@ async function deleteVenda (params) {
 module.exports = {
   getVendas,
   getVendasByID,
-  getVendasByUser,
   createVenda,
   updateVenda,
   deleteVenda

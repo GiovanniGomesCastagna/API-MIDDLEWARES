@@ -1,6 +1,6 @@
 const service = require("../services/faturas");
 const vendasService = require("../services/vendas");
-const authService = require("../services/auth")
+const authService = require("../services/auth");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
@@ -12,7 +12,14 @@ dayjs.tz.setDefault("America/Sao_Paulo");
 
 async function getFaturas(req, res) {
   try {
-    const faturas = await service.getFaturas();
+    const { tipo_acesso } = await authService.getUserByID(req.user.user.id);
+
+    const params = {
+      tipo_acesso: tipo_acesso,
+      usuario_id: req.user.user.id,
+    };
+
+    const faturas = await service.getFaturas(params);
     return res.status(200).json({
       status: "ok",
       data: faturas,
@@ -30,17 +37,11 @@ async function createFatura(req, res) {
     const params = {
       ...req.body,
       usuario_id: req.user.user.id,
-    }
+    };
 
+    const { tipo_acesso } = await authService.getUserByID(params.usuario_id);
 
-    const { tipo_acesso } = await authService.getUserByID(params.usuario_id)
-
-
-    if (
-      !params.venda_id ||
-      !params.status ||
-      !params.data_vencimento
-    ) {
+    if (!params.venda_id || !params.status || !params.data_vencimento) {
       let erros = [];
 
       if (!params.venda_id) erros.push("venda_id");
@@ -61,18 +62,15 @@ async function createFatura(req, res) {
       });
     }
 
-    if (venda.usuario_id !== params.usuario_id && tipo_acesso != 'admin') {
+    if (venda.usuario_id !== params.usuario_id && tipo_acesso != "admin") {
       return res.status(403).json({
-        status: 'error',
-        message: `Não é possível criar uma fatura a partir da venda de outro usuário.`
-      })
+        status: "error",
+        message: `Não é possível criar uma fatura a partir da venda de outro usuário.`,
+      });
     }
 
     const hoje = dayjs.tz(undefined, "America/Sao_Paulo").startOf("day");
-    const dataInserida = dayjs.tz(
-      params.data_vencimento,
-      "America/Sao_Paulo",
-    );
+    const dataInserida = dayjs.tz(params.data_vencimento, "America/Sao_Paulo");
 
     if (hoje > dataInserida) {
       return res.status(400).json({
@@ -81,11 +79,15 @@ async function createFatura(req, res) {
       });
     }
     params.data_pagamento = null;
-    const { total_venda, usuario_id } = venda;
-
+    const { total_venda } = venda;
 
     params.valor_fatura = total_venda;
-    // params.usuario_id = usuario_id;
+
+    if (params.status == "pago") {
+      params.data_pagamento = dayjs
+        .tz(undefined, "America/Sao_Paulo")
+        .startOf("day");
+    }
 
     const fatura = await service.createFatura(params);
     return res.status(201).json({
@@ -108,6 +110,20 @@ async function updateFatura(req, res) {
       id: req.params.id,
     };
 
+    if (params.valor_fatura) {
+      return res.status(403).json({
+        status: "error",
+        message: `Não é possível alterar o valor da fatura diretamente.`,
+      });
+    }
+
+    if (!params.status) {
+      return res.status(400).json({
+        status: "error",
+        message: `Informe ao menos um cmapo para atualizar: status.`,
+      });
+    }
+
     const faturaPesquisa = await service.getFaturaByID(params.id);
 
     if (faturaPesquisa.length == 0) {
@@ -127,12 +143,9 @@ async function updateFatura(req, res) {
     }
 
     if (params.status == "pago") {
-      params.data_pagamento = new Date()
-        .toLocaleString()
-        .substring(0, 10)
-        .split("/")
-        .reverse()
-        .join("-");
+      params.data_pagamento = dayjs
+        .tz(undefined, "America/Sao_Paulo")
+        .startOf("day");
     }
 
     if (params.status == "pendente" || params.status == "cancelado") {
@@ -156,7 +169,14 @@ async function updateFatura(req, res) {
 
 async function deleteFatura(req, res) {
   try {
-    await service.deleteFatura(req.params);
+    const fatura = await service.deleteFatura(req.params);
+    if (fatura == 0) {
+      return res.status(400).json({
+        status: "error",
+        message: `Não foi encontrado uma fatura com o id ${req.params.id}`,
+      });
+    }
+
     return res.status(204).send();
   } catch (error) {
     return res.status(500).json({

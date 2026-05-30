@@ -1,7 +1,16 @@
 const db = require('../configs')
 
-async function getFaturas () {
-  const resposta = await db.query('select * from faturas')
+async function getFaturas (params) {
+  const { tipo_acesso, usuario_id} = params
+
+  let sql = `
+  SELECT * FROM FATURAS WHERE 1=1
+  `
+  if (tipo_acesso == 'padrao') {
+    sql += `AND USUARIO_ID = ${usuario_id};`
+  }
+  
+  const resposta = await db.query(sql)
   return resposta.rows
 }
 
@@ -17,6 +26,24 @@ async function getFaturaByID(id) {
   DATA_PAGAMENTO,
   CRIADO_EM
   WHERE ID = $1;
+  `
+
+  const resposta = await db.query(sql, id)
+  return resposta.rows
+}
+
+async function getFaturaByVendaID(venda_id) {
+  const sql = `
+  SELECT 
+  ID,
+  VENDA_ID,
+  USUARIO_ID,
+  VALOR_FATURA,
+  STATUS_FATURA,
+  DATA_VENCIMENTO,
+  DATA_PAGAMENTO,
+  CRIADO_EM
+  WHERE VENDA_ID = $1;
   `
 
   const resposta = await db.query(sql, id)
@@ -68,6 +95,11 @@ async function updateFatura (params) {
     binds.push(params.data_pagamento)
   }
 
+  if (Object.hasOwn(params, 'valor_fatura')) {
+    campos.push(` valor_fatura = $${bindIndex++} `)
+    binds.push(params.valor_fatura)
+  }
+
   binds.push(params.id)
   const sql = `
     update faturas
@@ -76,7 +108,6 @@ async function updateFatura (params) {
      returning *
   `
   
-
   const resposta = await db.query(sql, binds)
   return resposta.rows
 }
@@ -91,6 +122,7 @@ module.exports = {
   getFaturas,
   getFaturaByID,
   createFatura,
+  getFaturaByVendaID,
   updateFatura,
   deleteFatura
 }

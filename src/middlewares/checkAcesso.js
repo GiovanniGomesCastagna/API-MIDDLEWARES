@@ -1,6 +1,10 @@
+const authService = require('../services/auth')
+
 async function isAdmin(req, res, next) {
   try {
-    const tipo_acesso = req.user.user.tipo_acesso;
+    const usuario = await authService.getUserByID(req.user.user.id)
+
+    const { tipo_acesso } = usuario
 
     if (tipo_acesso !== "admin") {
       return res.status(403).json({

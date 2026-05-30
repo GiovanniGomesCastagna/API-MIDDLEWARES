@@ -1,10 +1,18 @@
 const service = require("../services/vendas");
 const authService = require("../services/auth");
+const faturaService = require("../services/faturas");
 const auth = require("./auth");
 
 async function getVendas(req, res) {
   try {
-    const vendas = await service.getVendas();
+    const { tipo_acesso } = await authService.getUserByID(req.user.user.id);
+
+    const params = {
+      tipo_acesso: tipo_acesso,
+      usuario_id: req.user.user.id,
+    };
+
+    const vendas = await service.getVendas(params);
     return res.status(200).json({
       status: "ok",
       data: vendas,
@@ -59,23 +67,70 @@ async function updateVenda(req, res) {
   try {
     const params = {
       ...req.body,
+      usuario_logado: req.user.user.id,
       id: req.params.id,
     };
+    const venda = await service.getVendasByID(params.id);
 
-    if (!params.total_venda) {
-      return res.status(400).json({
-        status: "error",
-        message: "Informe ao menos um campo para atualizar: valor total",
-      });
-    }
-    
-    const venda = await service.updateVenda(params);
-    if (!venda.length) {
+    if (!venda) {
       return res.status(404).json({
         status: "error",
-        message: `Não foi encontrado uma venda com o id &{params.id}`,
+        message: `Não foi encontrado uma venda com o id ${params.id}`,
       });
     }
+
+    if (!params.total_venda || !params.usuario_id) {
+      return res.status(400).json({
+        status: "error",
+        message: "Informe ao menos um campo para atualizar: valor total, usuario_id",
+      });
+    }
+
+    const { tipo_acesso } = await authService.getUserByID(params.usuario_id);
+
+    if (venda.usuario_id !== params.usuario_logado && tipo_acesso !== "admin") {
+      return res.status(403).json({
+        status: "error",
+        message: `Não é possível alterar a venda de outro usuário.`,
+      });
+    }
+
+    if (params.usuario_id && tipo_acesso !== "admin") {
+      return res.status(403).json({
+        status: 'error',
+        message: `Não é possível alterar o usuário da venda sendo um usuário comum.`
+      })
+    }
+
+    if (
+      isNaN(params.total_venda) ||
+      params.total_venda <= 0 ||
+      typeof params.total_venda !== "number"
+    ) {
+      return res.status(400).json({
+        status: "error",
+        message: "Valor total deve ser um numero maior que zero",
+      });
+    }
+
+    const fatura = await faturaService.getFaturaByVendaID(params.id);
+
+    if (fatura && fatura.status == "pago") {
+      return res.status(403).json({
+        status: "error",
+        message: `Não é possível alterar o valor de uma venda atribuida a uma fatura paga.`,
+      });
+    }
+
+    const vendaAtualizada = await service.updateVenda(params);
+
+    if (fatura && fatura.status !== 'pago') {
+      const paramsFatura = {
+        valor_fatura: params.total_venda,
+      };
+      const updateFatura = await faturaService.updateFatura(paramsFatura);
+    }
+
     return res.status(200).json({
       status: "ok",
       message: "Venda atualizada com sucesso",
