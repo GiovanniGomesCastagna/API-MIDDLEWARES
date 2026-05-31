@@ -25,10 +25,11 @@ async function getFaturaByID(id) {
   DATA_VENCIMENTO,
   DATA_PAGAMENTO,
   CRIADO_EM
+  FROM FATURAS
   WHERE ID = $1;
   `
 
-  const resposta = await db.query(sql, id)
+  const resposta = await db.query(sql, [id])
   return resposta.rows
 }
 
@@ -43,10 +44,11 @@ async function getFaturaByVendaID(venda_id) {
   DATA_VENCIMENTO,
   DATA_PAGAMENTO,
   CRIADO_EM
+  FROM FATURAS
   WHERE VENDA_ID = $1;
   `
 
-  const resposta = await db.query(sql, id)
+  const resposta = await db.query(sql, [venda_id])
   return resposta.rows
 }
 
