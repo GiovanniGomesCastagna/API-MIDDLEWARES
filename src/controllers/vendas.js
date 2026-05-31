@@ -86,7 +86,7 @@ async function updateVenda(req, res) {
       });
     }
 
-    const { tipo_acesso } = await authService.getUserByID(params.usuario_id);
+    const { tipo_acesso } = await authService.getUserByID(params.usuario_logado);
 
     if (venda.usuario_id !== params.usuario_logado && tipo_acesso !== "admin") {
       return res.status(403).json({
