@@ -30,7 +30,7 @@ async function getFaturaByID(id) {
   `
 
   const resposta = await db.query(sql, [id])
-  return resposta.rows
+  return resposta.rows[0]
 }
 
 async function getFaturaByVendaID(venda_id) {
@@ -40,7 +40,7 @@ async function getFaturaByVendaID(venda_id) {
   VENDA_ID,
   USUARIO_ID,
   VALOR_FATURA,
-  STATUS_FATURA,
+  STATUS,
   DATA_VENCIMENTO,
   DATA_PAGAMENTO,
   CRIADO_EM
@@ -49,7 +49,7 @@ async function getFaturaByVendaID(venda_id) {
   `
 
   const resposta = await db.query(sql, [venda_id])
-  return resposta.rows
+  return resposta.rows[0]
 }
 
 async function createFatura (params) {
@@ -109,7 +109,7 @@ async function updateFatura (params) {
      where id = $${bindIndex++}
      returning *
   `
-  
+
   const resposta = await db.query(sql, binds)
   return resposta.rows
 }

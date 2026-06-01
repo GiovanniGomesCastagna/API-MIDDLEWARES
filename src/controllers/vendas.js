@@ -1,7 +1,6 @@
 const service = require("../services/vendas");
 const authService = require("../services/auth");
 const faturaService = require("../services/faturas");
-const auth = require("./auth");
 
 async function getVendas(req, res) {
   try {
@@ -65,6 +64,12 @@ async function createVenda(req, res) {
 
 async function updateVenda(req, res) {
   try {
+    if (!req.params.id) {
+      return res.status(400).json({
+        status: 'error',
+        message: `Informe o ID da venda para atualizá-la.`
+      })
+    }
     const params = {
       ...req.body,
       usuario_logado: req.user.user.id,
@@ -79,10 +84,10 @@ async function updateVenda(req, res) {
       });
     }
 
-    if (!params.total_venda || !params.usuario_id) {
+    if (!params.total_venda && !params.usuario_id) {
       return res.status(400).json({
         status: "error",
-        message: "Informe ao menos um campo para atualizar: valor total, usuario_id",
+        message: "Informe ao menos um campo para atualizar: total_venda, usuario_id",
       });
     }
 
@@ -126,6 +131,7 @@ async function updateVenda(req, res) {
 
     if (fatura && fatura.status !== 'pago') {
       const paramsFatura = {
+        id: fatura.id ,
         valor_fatura: params.total_venda,
       };
       const updateFatura = await faturaService.updateFatura(paramsFatura);

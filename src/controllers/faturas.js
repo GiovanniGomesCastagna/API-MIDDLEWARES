@@ -109,6 +109,15 @@ async function updateFatura(req, res) {
       ...req.body,
       id: req.params.id,
     };
+    
+    const faturaPesquisa = await service.getFaturaByID(params.id);
+
+    if (faturaPesquisa.length == 0) {
+      return res.status(400).json({
+        status: "error",
+        message: `Fatura inexistente. Escolha outra fatura.`,
+      });
+    }
 
     if (params.valor_fatura) {
       return res.status(403).json({
@@ -120,16 +129,7 @@ async function updateFatura(req, res) {
     if (!params.status) {
       return res.status(400).json({
         status: "error",
-        message: `Informe ao menos um cmapo para atualizar: status.`,
-      });
-    }
-
-    const faturaPesquisa = await service.getFaturaByID(params.id);
-
-    if (faturaPesquisa.length == 0) {
-      return res.status(400).json({
-        status: "error",
-        message: `Fatura inexistente. Escolha outra fatura.`,
+        message: `Informe ao menos um campo para atualizar: status.`,
       });
     }
 
