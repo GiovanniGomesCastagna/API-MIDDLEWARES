@@ -78,48 +78,9 @@ async function login(params) {
   };
 }
 
-// async function update(params) {
-//   const campos = [];
-//   const binds = [];
-//   let bindIndex = 1;
-
-//   if (Object.hasOwn(params, "nome")) {
-//     campos.push(` nome = $${bindIndex++} `);
-//     binds.push(params.nome);
-//   }
-
-//   if (Object.hasOwn(params, "email")) {
-//     campos.push(` email = $${bindIndex++} `);
-//     binds.push(params.senha);
-//   }
-
-//   if (Object.hasOwn(params, "senha")) {
-//     campos.push(` senha = $${bindIndex++} `);
-//     const senhaHash = await bcrypt.hash(params.senha, 10);
-//     binds.push(senhaHash);
-//   }
-
-//   if (Object.hasOwn(params, "tipo_acesso")) {
-//     campos.push(` tipo_acesso = $${bindIndex++} `);
-//     binds.push(params.tipo_acesso);
-//   }
-
-//   binds.push(params.id);
-//   const sql = `
-//   UPDATE USUARIOS
-//   SET ${campos.join(", ")}
-//   WHERE ID = $${bindIndex++}
-//   RETURNING *;
-//   `;
-
-//   const result = await db.query(sql, binds);
-//   return result.rows;
-// }
-
 module.exports = {
   register,
   getUserByEmail,
   getUserByID,
   login,
-  // update,
 };

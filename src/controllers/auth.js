@@ -70,79 +70,8 @@ async function login(req, res) {
   }
 }
 
-// async function update(req, res) {
-//   try {
-//     const params = {
-//       ...req.body,
-//       id: req.user.user.id,
-//     };
-
-//     // if (Number(params.id) != Number(req.user.id)) {
-//     //   return res.status(403).json({
-//     //     status: 'error',
-//     //     message: `Você não pode alterar os dados de outro usuário.`
-//     //   })
-//     // }
-
-//     if (!params.email && !params.senha && !params.nome && !params.tipo_acesso) {
-//       return res.status(400).json({
-//         status: "error",
-//         message: `Preencha ao menos um campo para atualizar o usuário. Campos disponíveis: email, senha, nome, tipo_acesso`,
-//       });
-//     }
-
-//     if (params.email) {
-//       const checkEmail = await service.getUserByEmail(params.email);
-//       if (checkEmail.rowCount !== 0) {
-//         return res.status(409).json({
-//           status: "error",
-//           message: `Este email já está em uso. Tente novamente com outro email.`,
-//         });
-//       }
-//     }
-
-//     if (params.senha && !params.senha_confirm) {
-//       return res.status(400).json({
-//         status: "error",
-//         message: `Preencha o campo senha_confirm para atualizar a senha.`,
-//       });
-//     }
-
-//     if (params.senha !== params.senha_confirm) {
-//       return res.status(422).json({
-//         status: "error",
-//         message: `Os campos senha e senha_confirm precisam ser iguais.`,
-//       });
-//     }
-
-//     if (
-//       params.tipo_acesso &&
-//       params.tipo_acesso !== "admin" &&
-//       params.tipo_acesso !== "padrao"
-//     ) {
-//       return res.status(422).json({
-//         status: "error",
-//         message: `Apenas os tipos de acesso 'admin' e 'padrao' são aceitos.`,
-//       });
-//     }
-
-//     const updateUsuario = await service.update(params);
-
-//     return res.status(200).json({
-//       status: "Successful update",
-//       message: `Atualizado com sucesso.`,
-//       data: updateUsuario,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       status: "Internal Error",
-//       message: `Erro interno do servidor. Mensagem de erro: ${error.message}`,
-//     });
-//   }
-// }
 
 module.exports = {
   register,
   login,
-  // update,
 };
